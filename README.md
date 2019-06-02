@@ -128,7 +128,21 @@ valres = fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','dob
 
 * varnames代表需要用来进行匹配的字段。在S1和S2中，我们用所有的5个字段，即name, sex, yob, mob和dob来进行匹配。stringdist.match表示需要利用我们的中文匹配方法来进行匹配的字段，即通过拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合来进行匹配，在这里我们仅对name字段进行中文字符串匹配。在实际操作中，请设置成你所需要进行姓名匹配的字段名称。
 
-* stringdist.method表示用来生成拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合的函数，该函数的返回值为代表S1和S2中每个元素的相似性的矩阵。此代码
+* stringdist.method表示计算姓名相似性的函数，该函数的返回值为代表S1和S2中每个元素的相似性的矩阵。这里使用的是chin_strsim函数。*请不要修改此参数。*
+
+* stringdist.args表示输入chin_strsim函数的参数，请将reftable = unique(S1$name, S2$name)中的S1, S2分别替换为你所使用的dfA和dfB的名字，name替换为你所使用的进行姓名匹配的字段名称。
+
+* string.transform表示用来生成拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合的函数。这里使用的是transparser函数。*请不要修改此参数。*
+
+* string.transform.args表示输入给transparser函数的参数，同上请将reftable = unique(S1$name, S2$name)中的S1, S2分别替换为你所使用的dfA和dfB的名字，name替换为你所使用的进行姓名匹配的字段名称。
+
+* cut.a表示在判断姓名是否匹配的时候的相似性的阈值，这里通过机器学习方法xgboost得到。*请不要修改此参数。*
+
+* verbose表示是否显示匹配进度，设为T时表示是，设为F时表示否。
+
+* estimate.only表示是否只输出参数，不输出匹配结果，设为T时表示是，即仅输出模型的参数，建议设为F，则可同时输出参数和匹配结果。
+
+* cond.indep表示是否假设条件独立，建议设为F
 
 <a name="interpret"></a>
 ## 5. 结果解读
