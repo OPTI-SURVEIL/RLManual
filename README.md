@@ -79,6 +79,39 @@ load('F-score_based_thresholds.Rdata')
 
 <a name="usage"></a>
 ## 4. 使用方法
+fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章](https://imai.fas.harvard.edu/research/files/linkage.pdf)。包中主要使用函数为fastLink()和getMatches()。fastLink()用于进行匹配，getMatches()用于提取相匹配的记录。
+首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。
+```
+S1 <- read.csv("Name match 1.csv")
+S2 <- read.csv("Name match 2.csv")
+```
+通过下列命令，可以查看S1和S2都包含哪些数据
+```
+View(S1)
+View(S2)
+```
+以下为S1的前6行：
+```
+        name sex  yob mob dob
+1       孙文   0 1975   6   1
+2       莊子   1 1980  10  17
+3 伊姆荷太普   1 1993   4   6
+4     神农氏   1 1983  11   9
+5     陈水扁   0 1977   9   6
+6     拿破仑   1 1958   8  19
+```
+以下为S2的前6行:
+```
+        name sex  yob mob dob
+1     孫中山   0 1975   6   1
+2       庄子   1 1980  10  17
+3     印何闐   1 1993   4   6
+4       神农   1 1983  11   9
+5     陳水扁   0 1977   9   6
+6 拿破仑一世   1 1958   8  19
+```
+其中name字段为姓名, sex字段为性别（随机生成，不代表真实性别），yob为出生年份，mob为出生月份，dob为出生日期（随机生成，不代表真实出生日期）。NA表示该字段数据缺失。
+
 
 <a name="interpret"></a>
 ## 5. 结果解读
