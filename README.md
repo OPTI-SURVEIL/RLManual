@@ -80,11 +80,12 @@ load('F-score_based_thresholds.Rdata')
 <a name="usage"></a>
 ## 4. 使用方法
 1. 导入数据
+
 fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章](https://imai.fas.harvard.edu/research/files/linkage.pdf)。包中主要使用函数为fastLink()和getMatches()。fastLink()用于进行匹配，getMatches()用于提取相匹配的记录。
-首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。
+首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。**注意：**需要设置stringAsFactors = FALSE，不然姓名会作为factor读入而非字符串，后续匹配过程将会报错。
 ```
-S1 <- read.csv("Name match 1.csv")
-S2 <- read.csv("Name match 2.csv")
+S1 <- read.csv("Name match 1.csv", stringsAsFactors = FALSE)
+S2 <- read.csv("Name match 2.csv", stringsAsFactors = FALSE)
 ```
 通过下列命令，可以查看S1和S2都包含哪些数据
 ```
@@ -115,6 +116,7 @@ View(S2)
 
 
 2. 记录匹配
+
 记录匹配使用fastLink()函数，在R操作台中，输入?fastLink可以查看函数的使用说明
 ```
 valres = fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','dob'),
@@ -143,6 +145,46 @@ valres = fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','dob
 * estimate.only表示是否只输出参数，不输出匹配结果，设为T时表示是，即仅输出模型的参数，建议设为F，则可同时输出参数和匹配结果。
 
 * cond.indep表示是否假设条件独立，建议设为F
+
+
+在匹配过程中，会输出以下信息，请
+```
+==================== 
+fastLink(): Fast Probabilistic Record Linkage
+==================== 
+
+If you set return.all to FALSE, you will not be able to calculate a confusion table as a summary statistic.
+Calculating matches for each variable.
+    Matching variable name using string-distance matching.
+WARNING: You have no exact matches for name.
+    Matching variable sex using exact matching.
+    Matching variable yob using exact matching.
+    Matching variable mob using exact matching.
+    Matching variable dob using exact matching.
+Calculating matches for each variable took 0.7 minutes.
+
+Getting counts for parameter estimation.
+    Parallelizing calculation using OpenMP. 1 threads out of 8 are used.
+Getting counts for parameter estimation took 0 minutes.
+
+Running the EM algorithm.
+Running the EM algorithm took 0.29 seconds.
+
+** Selected match probability threshold is:  0.254680688264359 **
+Getting the indices of estimated matches.
+    Parallelizing calculation using OpenMP. 1 threads out of 8 are used.
+Getting the indices of estimated matches took 0 minutes.
+
+Deduping the estimated matches.
+Deduping the estimated matches took 0 minutes.
+
+Getting the match patterns for each estimated match.
+Getting the match patterns for each estimated match took 0 minutes.
+
+```
+
+3. 提取匹配记录
+
 
 <a name="interpret"></a>
 ## 5. 结果解读
