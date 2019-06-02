@@ -31,6 +31,23 @@ Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 setwd("C:/Users/Documents/")
 ```
 将C:/Users/Documents/替换为第1步中保存下载数据的路径
+4. 加载所需要的R包
+```
+library(tidyverse)
+library(fastLink)
+library(ChinSimi)
+library(xgboost)
+```
+5. 导入包括所需要的函数的R文件linkage_utils.R（在步骤1中已经下载）
+```
+source('linkage_utils.R')
+```
+6. 导入姓名匹配机器学习模型数据
+```
+load('final_xgb_model_10.Rdata')
+load('F-score_based_thresholds.Rdata')
+```
+
 
 ## 使用方法
 
