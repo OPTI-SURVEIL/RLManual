@@ -16,3 +16,18 @@
 devtools::install_github('OPTI-SURVEIL/fastLink',dependencies = T, force = TRUE)
 devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 ```
+
+## 准备工作
+1. 下载[此文件夹](https://github.com/OPTI-SURVEIL/RLManual)中除了README.md的所有文件，其中：
+* Name match 1.csv和Name match 2.csv为样例数据
+* linkage_utils.R为匹配过程中需要的函数
+* isotonic_regs.Rdata以及F-score_based_thresholds.Rdata为机器学习模型
+2. 将系统环境设置为中文。因为我们需要匹配的记录是中文，因此我们需要首先将R环境设置成中文。
+```
+Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
+```
+3. 
+
+
+## 使用方法
+
