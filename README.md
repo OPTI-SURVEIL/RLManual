@@ -5,7 +5,8 @@
 1. [背景](#background)  
 2. [安装](#installation)  
 3. [准备工作](#prep)  
-4. [使用方法](#use)  
+4. [使用方法](#usage)  
+5. [结果解读](#interpret)
 
 
 
@@ -76,6 +77,8 @@ load('F-score_based_thresholds.Rdata')
 
 
 
-<a name="use"></a>
+<a name="usage"></a>
 ## 4. 使用方法
 
+<a name="interpret"></a>
+## 5. 结果解读
