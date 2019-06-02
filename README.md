@@ -26,13 +26,11 @@ devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 ```
 Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 ```
-3. 设置工作文件夹为保存步骤1中下载数据的文件夹，注意文件路径中应该用"/"而非"\"，例如不应该用"C:\Users\Documents\"而应该用"C:/Users/Documents/"
+3. 设置工作文件夹为保存步骤1中下载数据的文件夹，注意文件路径中应该用"/"而非"\"，例如不应该用"C:\Users\Documents\"而应该用"C:/Users/Documents/"。 例如：
 ```
-例如：
 setwd("C:/Users/Documents/")
-将C:/Users/Documents/替换为第1步中保存下载数据的路径
 ```
-
+将C:/Users/Documents/替换为第1步中保存下载数据的路径
 
 ## 使用方法
 
