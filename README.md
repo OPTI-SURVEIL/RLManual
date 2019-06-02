@@ -8,5 +8,7 @@
 基于汉字以及中文人名的特点，我们改进了现有的记录匹配R包fastLink，将我们开发的利用机器学习方法xgboost来进行姓名匹配的方法融入fastLink中，该姓名匹配方法可以同时考虑汉字的读音（拼音），字形（五笔和四角号码），偏旁部首及结构。除了姓名，在记录匹配中还可以同时考虑其他的属性，例如性别，出生年月，地址等。本文档将介绍fastLink包的安装方法，使用方法以及结果解读。
 
 ## 安装
-1. [安装R及RStudio](https://blog.csdn.net/Joshua_HIT/article/details/73741139)
-2. [安装Rtools](https://www.cnblogs.com/liugh/p/9937489.html)(只需要步骤一和二)
+1. [安装R及RStudio](https://blog.csdn.net/Joshua_HIT/article/details/73741139)。Rstudio的使用见[R语言初级教程](https://zhuanlan.zhihu.com/p/45503712)。
+2. [安装Rtools](https://www.cnblogs.com/liugh/p/9937489.html)-只需要步骤一和二，即安装和设置环境变量
+3. [安装所需要的R包](http://blog.sciencenet.cn/blog-2379401-936653.html)tidyverse, xgboost和devtools，可按照链接中的方法1来安装，即在RStudio的操作台中输入install.packages("tidyverse")，之后回车。另外两个包可以按照同样的方法安装。 
+
