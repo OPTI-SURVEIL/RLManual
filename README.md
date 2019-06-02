@@ -2,7 +2,8 @@
 
 
 [背景](#background)
-[ Usage tips. ](#usage)
+[安装](#installation)
+[准备工作](#prep)
 
 <a name="background"></a>
 ## 背景
@@ -12,6 +13,7 @@
 
 基于汉字以及中文人名的特点，我们改进了现有的记录匹配R包fastLink，将我们开发的利用机器学习方法xgboost来进行姓名匹配的方法融入fastLink中，该姓名匹配方法可以同时考虑汉字的读音（拼音），字形（五笔和四角号码），偏旁部首及结构。除了姓名，在记录匹配中还可以同时考虑其他的属性，例如性别，出生年月，地址等。本文档将介绍fastLink包的安装方法，使用方法以及结果解读。
 
+<a name="installation"></a>
 ## 安装
 1. [安装R及RStudio](https://blog.csdn.net/Joshua_HIT/article/details/73741139)。Rstudio的使用见[R语言初级教程](https://zhuanlan.zhihu.com/p/45503712)。
 2. [安装Rtools](https://www.cnblogs.com/liugh/p/9937489.html)-只需要步骤一和二，即安装和设置环境变量
@@ -22,6 +24,7 @@ devtools::install_github('OPTI-SURVEIL/fastLink',dependencies = T, force = TRUE)
 devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 ```
 
+<a name="prep"></a>
 ## 准备工作
 1. 下载[此文件夹](https://github.com/OPTI-SURVEIL/RLManual)中除了README.md的所有文件，其中：
 * Name match 1.csv和Name match 2.csv为样例数据
