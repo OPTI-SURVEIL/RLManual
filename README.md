@@ -2,8 +2,14 @@
 
 
 [背景](#background)
+
 [安装](#installation)
+
 [准备工作](#prep)
+
+[使用方法](#use)
+
+
 
 <a name="background"></a>
 ## 背景
@@ -66,6 +72,6 @@ load('final_xgb_model_10.Rdata')
 load('F-score_based_thresholds.Rdata')
 ```
 
-
+<a name="use"></a>
 ## 使用方法
 
