@@ -79,6 +79,7 @@ load('F-score_based_thresholds.Rdata')
 
 <a name="usage"></a>
 ## 4. 使用方法
+1. 导入数据
 fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章](https://imai.fas.harvard.edu/research/files/linkage.pdf)。包中主要使用函数为fastLink()和getMatches()。fastLink()用于进行匹配，getMatches()用于提取相匹配的记录。
 首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。
 ```
@@ -112,6 +113,22 @@ View(S2)
 ```
 其中name字段为姓名, sex字段为性别（随机生成，不代表真实性别），yob为出生年份，mob为出生月份，dob为出生日期（随机生成，不代表真实出生日期）。NA表示该字段数据缺失。
 
+
+2. 记录匹配
+记录匹配使用fastLink()函数，在R操作台中，输入?fastLink可以查看函数的使用说明
+```
+valres = fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','dob'),
+                   stringdist.match = 'name', stringdist.method = chin_strsim,
+                   stringdist.args = list(model = model_10, reftable = unique(S1$name, S2$name)),
+                   string.transform = transparser, 
+                   string.transform.args = list(model = model_10,reftable = unique(S1$name, S2$name)),
+                   cut.a = xgb10_thresh, verbose = T,estimate.only = F,cond.indep = F)
+```
+* dfA表示第一个需要匹配的记录集，dfB表示第二个需要匹配的记录集，这里因为我们在读入数据时，给数据集的命名为S1和S2，因此输入时，设置dfA = S1, dfB = S2。在实际操作中，需要根据你在读入数据时使用的数据集名称来设置。需要注意的是，在S1和S2中，请使用一致的字段名，并且最好使用英文字段名。例如，如果姓名字段在S1中的名称为xingming，那么在S2中也应该保持一致，而不能使用name。
+
+* varnames代表需要用来进行匹配的字段。在S1和S2中，我们用所有的5个字段，即name, sex, yob, mob和dob来进行匹配。stringdist.match表示需要利用我们的中文匹配方法来进行匹配的字段，即通过拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合来进行匹配，在这里我们仅对name字段进行中文字符串匹配。在实际操作中，请设置成你所需要进行姓名匹配的字段名称。
+
+* stringdist.method表示用来生成拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合的函数，该函数的返回值为代表S1和S2中每个元素的相似性的矩阵。此代码
 
 <a name="interpret"></a>
 ## 5. 结果解读
