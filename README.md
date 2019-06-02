@@ -6,7 +6,6 @@
 2. [安装](#installation)  
 3. [准备工作](#prep)  
 4. [使用方法](#usage)  
-5. [结果解读](#interpret)
 
 
 
@@ -119,7 +118,7 @@ View(S2)
 
 记录匹配使用fastLink()函数，在R操作台中，输入?fastLink可以查看函数的使用说明
 ```
-valres = fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','dob'),
+valres <- fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','dob'),
                    stringdist.match = 'name', stringdist.method = chin_strsim,
                    stringdist.args = list(model = model_10, reftable = unique(S1$name, S2$name)),
                    string.transform = transparser, 
@@ -147,7 +146,7 @@ valres = fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','dob
 * cond.indep表示是否假设条件独立，建议设为F
 
 
-在匹配过程中，会输出以下信息，请
+在匹配过程中，会输出以下信息，请留意以下输出中的数字（**Selected match probability threshold is:  0.254680688264359**），这个需要作为下一个步骤的输入。
 ```
 ==================== 
 fastLink(): Fast Probabilistic Record Linkage
@@ -170,7 +169,7 @@ Getting counts for parameter estimation took 0 minutes.
 Running the EM algorithm.
 Running the EM algorithm took 0.29 seconds.
 
-** Selected match probability threshold is:  0.254680688264359 **
+Selected match probability threshold is:  0.254680688264359
 Getting the indices of estimated matches.
     Parallelizing calculation using OpenMP. 1 threads out of 8 are used.
 Getting the indices of estimated matches took 0 minutes.
@@ -184,7 +183,74 @@ Getting the match patterns for each estimated match took 0 minutes.
 ```
 
 3. 提取匹配记录
+提取匹配记录需要使用getMatches函数，这里的阈值将会设置为上一步中的输出，即0.254680688264359。
 
+```
+matched_dfs <- getMatches(dfA = S1, dfB = S2, fl.out = valres, threshold.match = 0.254680688264359, combine.dfs = FALSE, twolineformat = TRUE)
+```
+* dfA和dfB分别代表需要进行匹配的两个记录表
+* fl.out代表fastLink的输出，这里即valres
+* threshold.match代表fastLink在console输出中使用的阈值，这里即0.254680688264359
+* combine.dfs设置为F或者是FALSE时，输出两个数据表，设置为T或者是TRUE时，输出匹配记录合并在一起的数据表。可以分别设置为T或者F，看输出结果的不同
+* twolineformat为输出数据的格式，设置为F时，输出两个数据表，设置为T时，将匹配的记录显示在一起
 
-<a name="interpret"></a>
-## 5. 结果解读
+以下分别为将combine.dfs, twolineformat设为T或者F时的示例结果
+
+* combine.dfs = T, twolineformat = F, 结果为两个记录集显示在一起，仅显示数据集A中的各个属性。gamma.name, gamma.sex...分别代表每个每个属性是否匹配，0代表不匹配，2代表匹配。在第一行中，gamma.name = 0，即说明在第一个匹配的记录中，姓名不一致。
+```
+          name sex yob   mob dob  gamma.name gamma.sex gamma.yob gamma.mob gamma.dob
+1         孙文   0 1975   6   1          0         2         2         2         2
+2         莊子   1 1980  10  17          0         2         2         2         2
+3   伊姆荷太普   1 1993   4   6          0         2         2         2         2
+4       神农氏   1 1983  11   9          0         2         2         2         2
+5       陈水扁   0 1977   9   6          2         2         2         2         2
+6       拿破仑   1 1958   8  19          0         2         2         2         2
+```
+* combine.dfs = F, twolineformat = F 这时将匹配的记录显示为两个数据集，即dfA.match里头的第一行和dfB.match里头的第一行相对应。
+```
+$`dfA.match`
+          name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
+1         孙文   0 1975   6   1          0         2         2         2         2 0.9891703137473733
+2         莊子   1 1980  10  17          0         2         2         2         2 0.9891703137473733
+3   伊姆荷太普   1 1993   4   6          0         2         2         2         2 0.9891703137473733
+4       神农氏   1 1983  11   9          0         2         2         2         2 0.9891703137473733
+5       陈水扁   0 1977   9   6          2         2         2         2         2 0.9999983070577794
+6       拿破仑   1 1958   8  19          0         2         2         2         2 0.9891703137473733
+
+$dfB.match
+          name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
+1       孫中山   0 1975   6   1          0         2         2         2         2 0.9891703137473733
+2         庄子   1 1980  10  17          0         2         2         2         2 0.9891703137473733
+3       印何闐   1 1993   4   6          0         2         2         2         2 0.9891703137473733
+4         神农   1 1983  11   9          0         2         2         2         2 0.9891703137473733
+5       陳水扁   0 1977   9   6          2         2         2         2         2 0.9999983070577794
+6   拿破仑一世   1 1958   8  19          0         2         2         2         2 0.9891703137473733
+```
+
+* combine.dfs = F, twolineformat = T 此时将匹配的记录交织显示
+```
+            row.index       name sex  yob mob dob p_match
+1                dfA.1       孙文   0 1975   6   1        
+2                dfB.1     孫中山   0 1975   6   1        
+3   agreement pattern:          0   2    2   2   2  0.9892
+4                                                         
+5                dfA.2       莊子   1 1980  10  17        
+6                dfB.2       庄子   1 1980  10  17        
+7   agreement pattern:          0   2    2   2   2  0.9892
+8                                                         
+9                dfA.3 伊姆荷太普   1 1993   4   6        
+10               dfB.3     印何闐   1 1993   4   6        
+11  agreement pattern:          0   2    2   2   2  0.9892
+12                                                        
+13               dfA.4     神农氏   1 1983  11   9        
+14               dfB.4       神农   1 1983  11   9        
+15  agreement pattern:          0   2    2   2   2  0.9892
+16                                                        
+17               dfA.5     陈水扁   0 1977   9   6        
+18               dfB.5     陳水扁   0 1977   9   6        
+19  agreement pattern:          2   2    2   2   2       1
+20                                                        
+21               dfA.6     拿破仑   1 1958   8  19        
+22               dfB.6 拿破仑一世   1 1958   8  19        
+23  agreement pattern:          0   2    2   2   2  0.9892
+```
