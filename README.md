@@ -22,15 +22,21 @@ devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 * Name match 1.csv和Name match 2.csv为样例数据
 * linkage_utils.R为匹配过程中需要的函数
 * isotonic_regs.Rdata以及F-score_based_thresholds.Rdata为机器学习模型
+
+
 2. 将系统环境设置为中文。因为我们需要匹配的记录是中文，因此我们需要首先将R环境设置成中文。
 ```
 Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 ```
+
+
 3. 设置工作文件夹为保存步骤1中下载数据的文件夹，注意文件路径中应该用"/"而非"\"，例如不应该用"C:\Users\Documents\"而应该用"C:/Users/Documents/"。 例如：
 ```
 setwd("C:/Users/Documents/")
 ```
 将C:/Users/Documents/替换为第1步中保存下载数据的路径
+
+
 4. 加载所需要的R包
 ```
 library(tidyverse)
@@ -38,10 +44,14 @@ library(fastLink)
 library(ChinSimi)
 library(xgboost)
 ```
+
+
 5. 导入包括所需要的函数的R文件linkage_utils.R（在步骤1中已经下载）
 ```
 source('linkage_utils.R')
 ```
+
+
 6. 导入姓名匹配机器学习模型数据
 ```
 load('final_xgb_model_10.Rdata')
