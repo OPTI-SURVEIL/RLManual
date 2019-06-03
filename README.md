@@ -81,7 +81,7 @@ load('F-score_based_thresholds.Rdata')
 1. 导入数据
 
 fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章](https://imai.fas.harvard.edu/research/files/linkage.pdf)。包中主要使用函数为fastLink()和getMatches()。fastLink()用于进行匹配，getMatches()用于提取相匹配的记录。
-首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。**注意：**需要设置stringAsFactors = FALSE，不然姓名会作为factor读入而非字符串，后续匹配过程将会报错。
+首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。**注意：** 需要设置stringAsFactors = FALSE，不然姓名会作为factor读入而非字符串，后续匹配过程将会报错。
 ```
 S1 <- read.csv("Name match 1.csv", stringsAsFactors = FALSE)
 S2 <- read.csv("Name match 2.csv", stringsAsFactors = FALSE)
