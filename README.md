@@ -183,6 +183,7 @@ Getting the match patterns for each estimated match took 0 minutes.
 ```
 
 3. 提取匹配记录
+
 提取匹配记录需要使用getMatches函数，这里的阈值将会设置为上一步中的输出，即0.254680688264359。
 
 ```
