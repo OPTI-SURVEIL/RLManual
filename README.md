@@ -73,7 +73,7 @@ library(readr)
 source('linkage_utils.R')
 ```
 
-### 3.5. 导入机器学习模型相关文件
+### 3.6. 导入机器学习模型相关文件
 导入姓名匹配机器学习模型以及阈值设置数据
 ```
 load('final_xgb_model_10.Rdata')
