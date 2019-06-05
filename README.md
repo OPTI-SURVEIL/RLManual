@@ -105,7 +105,7 @@ View(S2)
 6 拿破仑         1  1958     8    19
 ```
 以下为S2的前6行:
-
+```
   name         sex   yob   mob   dob
   <chr>      <int> <int> <int> <int>
 1 孫中山         0  1975     6     1
