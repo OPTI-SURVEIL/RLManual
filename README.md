@@ -23,7 +23,7 @@
 ## 2. 安装
 1. [安装R及RStudio](https://blog.csdn.net/Joshua_HIT/article/details/73741139)。Rstudio的使用见[R语言初级教程](https://zhuanlan.zhihu.com/p/45503712)。
 2. [安装Rtools](https://www.cnblogs.com/liugh/p/9937489.html)-只需要步骤一和二，即安装和设置环境变量
-3. [安装所需要的R包](http://blog.sciencenet.cn/blog-2379401-936653.html)tidyverse, xgboost和devtools，可按照链接中的方法1来安装，即在RStudio的操作台中输入install.packages("tidyverse")，之后回车。另外两个包可以按照同样的方法安装。 
+3. [安装所需要的R包](http://blog.sciencenet.cn/blog-2379401-936653.html)tidyverse, xgboost,devtools和readr，可按照链接中的方法1来安装，即在RStudio的操作台中输入install.packages("tidyverse")，之后回车。另外两个包可以按照同样的方法安装。 
 4. 使用以下代码安装Berkeley开发的包chinsimi, fastLink。
 ```
 devtools::install_github('OPTI-SURVEIL/fastLink',dependencies = T, force = TRUE)
@@ -60,6 +60,7 @@ library(tidyverse)
 library(fastLink)
 library(ChinSimi)
 library(xgboost)
+library(readr)
 ```
 
 
@@ -84,8 +85,8 @@ load('filled F-curves.Rdata')
 fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章](https://imai.fas.harvard.edu/research/files/linkage.pdf)。包中主要使用函数为fastLink()和getMatches()。fastLink()用于进行匹配，getMatches()用于提取相匹配的记录。
 首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。**注意：** 需要设置stringAsFactors = FALSE，不然姓名会作为factor读入而非字符串，后续匹配过程将会报错。
 ```
-S1 <- read.csv("Name match 1.csv", stringsAsFactors = FALSE)
-S2 <- read.csv("Name match 2.csv", stringsAsFactors = FALSE)
+S1 <- read_csv("Name match 1.csv")
+S2 <- read_csv("Name match 2.csv")
 ```
 通过下列命令，可以查看S1和S2都包含哪些数据
 ```
@@ -94,28 +95,66 @@ View(S2)
 ```
 以下为S1的前6行：
 ```
-        name sex  yob mob dob
-1       孙文   0 1975   6   1
-2       莊子   1 1980  10  17
-3 伊姆荷太普   1 1993   4   6
-4     神农氏   1 1983  11   9
-5     陈水扁   0 1977   9   6
-6     拿破仑   1 1958   8  19
+  name         sex   yob   mob   dob
+  <chr>      <int> <int> <int> <int>
+1 孙文           0  1975     6     1
+2 莊子           1  1980    10    17
+3 伊姆荷太普     1  1993     4     6
+4 神a农氏        1  1983    11     9
+5 陈水扁         0  1977     9     6
+6 拿破仑         1  1958     8    19
 ```
 以下为S2的前6行:
-```
-        name sex  yob mob dob
-1     孫中山   0 1975   6   1
-2       庄子   1 1980  10  17
-3     印何闐   1 1993   4   6
-4       神农   1 1983  11   9
-5     陳水扁   0 1977   9   6
-6 拿破仑一世   1 1958   8  19
+
+  name         sex   yob   mob   dob
+  <chr>      <int> <int> <int> <int>
+1 孫中山         0  1975     6     1
+2 庄子           1  1980    10    17
+3 印何           1  1993     4     6
+4 神农           1  1983    11     9
+5 陳水扁         0  1977     9     6
+6 拿破仑一世     1  1958     8    19
 ```
 其中name字段为姓名, sex字段为性别（随机生成，不代表真实性别），yob为出生年份，mob为出生月份，dob为出生日期（随机生成，不代表真实出生日期）。NA表示该字段数据缺失。**注意：** 此样例数据集出自一篇匹配维基百科中中文名字的文章，与我们实际应用中姓名的“错误”存在很大的不同。这里的错误主要包括简体中文/繁体中文以及别名，而实际匹配的姓名中的错误更多是音近字、形近字或者输入过程相近的字。
 
+2. 数据清洗
 
-2. 记录匹配
+姓名字段中，有时候会包括一些非汉字的字符，例如数字、字母和标点符号等（例如S1的第4行-神a农氏），因此需要首先进行数据清洗。在这里我们仅以Name match 1.csv作为示范，但是在实际应用中，需要对两个文件均进行数据清洗。除了姓名外，其他字段也可以用类似的方法进行清洗。
+
+A.删除字母
+
+首先提取包括字母的姓名的编号
+```
+alphainds <- grep('[a-z]', S1$name, ignore.case = TRUE) #本函数判断S1数据集的name字段中是否有字母a-z，当ignore.case被设置为TRUE时，可以同时考虑大写和小写字母。本函数的返回参数为一个数组，代表包括字母的姓名的编号。
+```
+在操作台里输入alphainds，键入回车，可以看到以下结果，表示的是包含字母的姓名编号，可以看到第一个是4，即第四个姓名神a农氏
+```
+[1]  4 44 49 66 92
+```
+如果想要查看这些姓名都是什么，可以输入
+```
+S1$name[alphainds]
+```
+输出结果为
+```
+[1] "神a农氏"     "毛澤東A"     "王b國維"     "五虎上将B"   "小泉純e一郎"
+```
+如果想要将这些字母删除，可以使用如下代码
+```
+S1$name[alphainds] <- gsub('[a-z]','',S1$name[alphainds], ignore.case = T) #本函数第一个输入数据为需要替换的内容，这里表示字母；第二个输入数据表示替换为什么，这里是空，即表示删除要替换的内容；第三个输入参数为需要替换的数据集或字段；第四个表示替换所有的大写和小写字母
+```
+检查是否替换成功
+```
+S1$name[alphainds]
+```
+输出结果
+```
+[1] "神农氏"     "毛澤東"     "王國維"     "五虎上将"   "小泉純一郎"
+```
+
+
+
+3. 记录匹配
 
 记录匹配使用fastLink()函数，在R操作台中，输入?fastLink可以查看函数的使用说明
 ```
