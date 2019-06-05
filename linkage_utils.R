@@ -92,44 +92,52 @@ expand.grid.jc <- function(seq1,seq2) {
   cbind(Var1 = rep.int(seq1, length(seq2)), 
         Var2 = rep.int(seq2, rep.int(length(seq1),length(seq2))))
 }
-compparser = function(nms1, nms2, varnames,tlist){
+compparser = function(tlist1, tlist2, model = NULL, varnames = NULL,nthread = parallel::detectCores()-1){
+  if(any(class(model) == 'xgb.Booster')) varnames = model$feature_names
+  if(any(class(model) %in% c('glm','lm'))) varnames = names(coef(model))[-1]
+  
   varnames = unique(gsub('_i(.)*','_i',varnames))
   trans = sapply(strsplit(gsub('min|max|diff','',varnames), '_'),'[[',1)
   compfun = sapply(strsplit(varnames, '_'),'[',2)
   qs = regmatches(compfun,gregexpr('[0-9]', compfun))
-  qs[sapply(qs,length)==0] = NA; qs = as.integer(unlist(qs))
+  qs[sapply(qs,length)==0] = 1; qs = as.integer(unlist(qs))
   compfun = gsub('[0-9]','',compfun)
   #compfun[is.na(compfun)] = unlist(regmatches(varnames[is.na(compfun)],gregexpr('min|max|diff',varnames[is.na(compfun)])))
   
-  cfun = list(e = function(x1,x2,...) sim_func(x1,x2),
-              cos = function(x1,x2,Q,...) sim_func(x1,x2,method='cosine',q=Q),
-              i = function(x1,x2,...) indfun(x1,x2),
-              c = function(x1, x2, ...) x1 + x2,
-              lcs = function(x1,x2,...) sim_func(x1,x2,method='lcs'),
-              f = function(x1,x2, sub1,sub2,...){
-                res = x1; res[which(sub1!=sub2)] = NA
+  cfun = list(e = function(x1,x2,...) as.numeric(sim_func(x1,x2,nthread = nthread)),
+              cos = function(x1,x2,q,...) as.numeric(sim_func(x1,x2,method='cosine',
+                                                                  q=q,
+                                                                  nthread = nthread)),
+              i = function(x1,x2,...){
+                indfun(x1,x2)
+              },
+              c = function(x1, x2, ...){
+                x1 + x2
+              },
+              lcs = function(x1,x2,...) as.numeric(sim_func(x1,x2,method='lcs',nthread = nthread)),
+              f = function(x1,x2, ...){
+                res = x1
+                #checkinds = which(!is.na(res))
+                
+                names1 = names(x1)
+                names2 = names(x2)
+                
+                res[which(names1 != names2)] = NA
                 res
               })
-              #max = function(x1,x2,Q) pmax(x1,x2),
-              #min = function(x1,x2,Q) pmin(x1,x2),
-              #diff = function(x1,x2,Q) abs(x1-x2))
   
   res = lapply(1:length(trans), function(i){
     Q = qs[i]
-    tr = trans[i]
-    sub1 = NA; sub2 = NA
-    if(grepl('freq',tr)){
-      st = switch(substr(tr,1,2), g1 = 2, g2 = 3, f1 = 1, f2 = 1)
-      en = switch(substr(tr,1,2), g1 = 9999, g2 = 9999, f1 = 1, f2 = 2)
-      sub1 = substr(nms1,st,en); sub2 = substr(nms2,st,en)
-    } 
     cf = cfun[[compfun[i]]]
-    x1 = tlist[[tr]][match(nms1,tlist$hanzi)]
-    x2 = tlist[[tr]][match(nms2,tlist$hanzi)]
-    cf(x1,x2,Q=Q,sub1=sub1,sub2=sub2)
+    tr = trans[i]
+    x1 = tlist1[[tr]]
+    x2 = tlist2[[tr]]
+    cf(x1,x2,q=Q)
+    
   })
   names(res) = varnames
-  as.data.frame(res)
+  res = as.data.frame(res,row.names = 1:length(res[[1]]))
+  return(data.frame(model.matrix.lm(~.+0,res,na.action = 'na.pass')))
 }
 
 compparser2 = function(tlist1, tlist2, model = NULL, varnames = NULL,nthread = 1){#this version automatically works with combinations
@@ -410,9 +418,9 @@ F1curve = function(scores,truth, plot = T){
     dropinds = which(scores_ %in% dupscores)
     dupscores = scores_[dropinds]
     
-    keepinds = which(dupscores[2:length(dupscores)] != dupscores[1:(length(dupscores)-1)])
+    keepinds = c(which(dupscores[2:length(dupscores)] != dupscores[1:(length(dupscores)-1)]) + 1,max(dropinds))
     
-    dropinds = dropinds[!(dropinds %in% keepinds)]
+    dropinds = dropinds[-keepinds]
     
     scores_ = scores_[-dropinds]
     F1 = F1[-dropinds]
@@ -420,8 +428,9 @@ F1curve = function(scores,truth, plot = T){
     Prec = Prec[-dropinds]
   }
   
-  res = data.frame(Score = scores_, F1 = F1,Recall = Rec, Precision = Prec)
-  if(plot) print(ggplot(res, aes(x = Score, y = F1)) + geom_line(col = 'red', alpha = 0.5,lwd = 1))
+  res = data.frame(Score = scores_, F1 = F1,Recall = Rec, Precision = Prec, TP = Rec * sum(truth))
+  res$FP = (1/Prec - 1) * res$TP
+  if(plot) print(ggplot(res[sample(1:nrow(res), pmin(nrow(res), 5000)),], aes(x = Score, y = F1)) + geom_line(col = 'red', alpha = 0.5,lwd = 1))
   return(list(
     fulldata = res,
     opt.thresh = scores_[which.max(F1)],
@@ -429,10 +438,38 @@ F1curve = function(scores,truth, plot = T){
   ))
 }
 
+F_adjust = function(F1curve,baseline_pi,new_pi, plot = T){
+  
+  #newFP = F1curve$FP * (1-new_pi)/(1-baseline_pi)
+  temp = 1/F1curve$Prec - 1
+  newPrec = 1/(temp * baseline_pi/new_pi * (1-new_pi)/(1-baseline_pi) + 1)
+  newF1 = 2*(newPrec * F1curve$Recall)/(newPrec + F1curve$Recall)
+  
+  res = F1curve
+  res$Prec = newPrec; res$oldF1 = res$F1; res$F1 = newF1
+  opt.thresh_old = res$Score[which.max(res$oldF1)]; opt.thresh = res$Score[which.max(res$F1)]; opt.F1 = max(res$F1)
+  if(plot) print(ggplot(res[sample(1:nrow(res), pmin(nrow(res), 5000)),], aes(x = Score, y = oldF1)) + geom_line(col = 'red', alpha = 0.5,lwd = 1) + 
+                   geom_line(col = 'blue', aes(y = F1), alpha = 0.5, lwd = 1) + geom_vline(col = 'blue', aes(xintercept = opt.thresh)) + 
+                   geom_vline(col = 'red', aes(xintercept = opt.thresh_old)))
+  return(list(
+    fulldata = res,
+    opt.thresh = opt.thresh,
+    opt.F1 = opt.F1
+  ))
+}
+
+
 isoreg.reduce = function(isoreg){
   res=list()
   
-  res$x = isoreg$x[isoreg$ord]
+  if(class(isoreg) == 'monoreg'){
+    ord = 1:length(isoreg$x)
+  } else{
+    ord = isoreg$ord
+  }
+  
+  
+  res$x = isoreg$x[ord]
   res$y = isoreg$yf
   
   res$x = tapply(res$x,res$y,function(x) unique(range(x)))
@@ -498,8 +535,6 @@ Measure_AUROCE = function(probs,truth){
   sum(widths * (rechght + trihght), na.rm = T)/(ntrue/nfalse)
 }
 
-
-
 bcorr = function(patterns){
   L = which(colnames(patterns)=='counts')-1
   counts = patterns[,L+1]
@@ -550,7 +585,6 @@ corplot = function(fit,title=NULL){
   text(x=1:length(bcor), y = (mcor-bcor) + .1, labels = labs, cex = 0.8, srt = 60)
 }
 
-
 p_thresh_adjust = function(cal_prob, baseline_pi, new_pi){
   #solve p(M|new_pi) = p(M|old_pi) = cal_prob
   
@@ -560,3 +594,50 @@ p_thresh_adjust = function(cal_prob, baseline_pi, new_pi){
   odds = targ_C * baseline_pi/(1-baseline_pi)
   odds/(1+odds) #adjusted probability threshold
 }
+
+F_adjust_link = function(Fcurve, flinkres, thresh.match,namecol, plot = T){
+  namecol = paste0('gamma.',namecol)
+
+  fcols = 1:length(flinkres$varnames)
+  
+  linked = which(flinkres$zeta.j >= thresh.match)
+  pats = flinkres$patterns.w[linked,fcols]
+  newpats = pats
+  newpats[,namecol] = 0
+  
+  newpats = unique(newpats)
+  
+  newpats_ = unique(rbind(pats,newpats))
+  newpats_ = apply(newpats_,1,paste0,collapse = '')
+  
+  allpats_ = apply(flinkres$patterns.w[,fcols],1,paste0,collapse = '')
+  counts = flinkres$patterns.w[match(newpats_,allpats_),'counts']
+  probs = flinkres$zeta.j[match(newpats_,allpats_)]
+  
+  pTP = sum(counts * probs,na.rm=T)
+  pFP = sum(counts * (1-probs), na.rm=T)
+  totPos = sum(flinkres$p.m * flinkres$patterns.w[,'counts'])
+  totNeg = sum(flinkres$p.u * flinkres$patterns.w[,'counts'])
+  
+  Fcurve$FP = Fcurve$FP * pFP/totNeg
+  Fcurve$TP = Fcurve$TP * pTP/totPos
+  
+  Fcurve$Recall = Fcurve$TP/max(Fcurve$TP)
+  Fcurve$Precision = Fcurve$TP/(Fcurve$TP + Fcurve$FP)
+  Fcurve$F1old = Fcurve$F1
+  Fcurve$F1 = 2 * Fcurve$Precision * Fcurve$Recall / (Fcurve$Precision + Fcurve$Recall)
+  
+  opt.thresh.old = Fcurve$Score[which.max(Fcurve$F1old)]
+  opt.thresh = Fcurve$Score[which.max(Fcurve$F1)]
+  
+  if(plot) print(ggplot(Fcurve[sample(1:nrow(Fcurve), pmin(5000,nrow(Fcurve))),], aes(x = Score, y = F1old)) + geom_line(col = 'red',lwd = 1, alpha = 0.5) + 
+                   geom_line(aes(y = F1), col = 'blue', lwd = 1,alpha = 0.5) + geom_vline(col = 'red',xintercept = opt.thresh.old) + 
+                   geom_vline(col = 'blue', xintercept = opt.thresh) + ylab('F1') + xlab('Classifier Score'))
+  
+  return(list(
+    curvedat = Fcurve,
+    opt.thresh = Fcurve$Score[which.max(Fcurve$F1)],
+    opt.F1 = max(Fcurve$F1)
+  ))
+}
+
