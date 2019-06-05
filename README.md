@@ -34,27 +34,30 @@ devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 
 <a name="prep"></a>
 ## 3. 准备工作
-1. 下载[此文件夹](https://github.com/OPTI-SURVEIL/RLManual)中以下文件：
+### 3.1. 下载数据 
+下载[此文件夹](https://github.com/OPTI-SURVEIL/RLManual)中以下文件：
 * Name match 1.csv, Name match 2.csv - 样例数据
 * linkage_utils.R - 匹配过程中需要的函数
 * filled F-curves.Rdata - 设定姓名匹配相似度阈值所需要的数据
 * final_xgb_model_10.Rdata - 机器学习模型数据
 
 
-2. 将系统环境设置为中文。因为我们需要匹配的记录是中文，因此我们需要首先将R环境设置成中文。在Windows系统上，可使用：
+### 3.2. 将系统环境设置为中文
+因为我们需要匹配的记录是中文，因此我们需要首先将R环境设置成中文。在Windows系统上，可使用：
 ```
 Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 ```
 
 
-3. 设置工作文件夹为保存步骤1中下载数据的文件夹，注意文件路径中应该用"/"而非"\"，例如不应该用"C:\Users\Documents\"而应该用"C:/Users/Documents/"。 例如：
+### 3.3. 设置工作文件夹 
+设置工作文件夹为保存步骤1中下载数据的文件夹，注意文件路径中应该用"/"而非"\"，例如不应该用"C:\Users\Documents\"而应该用"C:/Users/Documents/"。 例如：
 ```
 setwd("C:/Users/Documents/")
 ```
 **请将C:/Users/Documents/替换为第1步中保存下载数据的路径**
 
 
-4. 加载所需要的R包
+### 3.4. 加载所需要的R包
 ```
 library(tidyverse)
 library(fastLink)
@@ -80,7 +83,7 @@ load('filled F-curves.Rdata')
 
 <a name="usage"></a>
 ## 4. 使用方法
-1. 导入数据
+### 4.1. 导入数据
 
 fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章](https://imai.fas.harvard.edu/research/files/linkage.pdf)。包中主要使用函数为fastLink()和getMatches()。fastLink()用于进行匹配，getMatches()用于提取相匹配的记录。
 首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。**注意：** 需要设置stringAsFactors = FALSE，不然姓名会作为factor读入而非字符串，后续匹配过程将会报错。
@@ -117,11 +120,11 @@ View(S2)
 ```
 其中name字段为姓名, sex字段为性别（随机生成，不代表真实性别），yob为出生年份，mob为出生月份，dob为出生日期（随机生成，不代表真实出生日期）。NA表示该字段数据缺失。**注意：** 此样例数据集出自一篇匹配维基百科中中文名字的文章，与我们实际应用中姓名的“错误”存在很大的不同。这里的错误主要包括简体中文/繁体中文以及别名，而实际匹配的姓名中的错误更多是音近字、形近字或者输入过程相近的字。
 
-2. 数据清洗
+### 4.2. 数据清洗
 
 姓名字段中，有时候会包括一些非汉字的字符，例如数字、字母和标点符号等（例如S1的第4行-神a农氏），因此需要首先进行数据清洗。在这里我们仅以Name match 1.csv作为示范，但是在实际应用中，需要对两个文件均进行数据清洗。除了姓名外，其他字段也可以用类似的方法进行清洗。
 
-A.删除字母
+**1. 删除字母**
 
 首先提取包括字母的姓名的编号
 ```
