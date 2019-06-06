@@ -239,10 +239,7 @@ S1$name[punctinds]
 [6] "铃木善幸"       "胡?涛"          "李鸿章"   
 ```
 
-
-**(QU::START FROM HERE)**
-
-=============================================================
+=====================================QU: check cut.a ==================================
 
 ### 4.3. 记录匹配 （简单版）
 
@@ -253,30 +250,33 @@ valres <- fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','do
                    stringdist.args = list(model = model_10, reftable = unique(S1$name, S2$name)),
                    string.transform = transparser, 
                    string.transform.args = list(model = model_10,reftable = unique(S1$name, S2$name)),
-                   cut.a = xgb10_thresh, verbose = T,estimate.only = F,cond.indep = F)
+                   cut.a = xgb10F1_filled$opt.thresh, verbose = T,estimate.only = F,cond.indep = F)
 ```
-* dfA表示第一个需要匹配的记录集，dfB表示第二个需要匹配的记录集，这里因为我们在读入数据时，给数据集的命名为S1和S2，因此输入时，设置dfA = S1, dfB = S2。在实际操作中，需要根据你在读入数据时使用的数据集名称来设置。需要注意的是，在S1和S2中，请使用一致的字段名，并且最好使用英文字段名。例如，如果姓名字段在S1中的名称为xingming，那么在S2中也应该保持一致，而不能使用name。
+* dfA表示第一个需要匹配的记录集，dfB表示第二个需要匹配的记录集，这里因为我们在读入数据时，给数据集的命名为S1和S2，因此输入时，设置dfA = S1, dfB = S2。在实际操作中，需要根据你在读入数据时使用的数据集名称来设置。需要注意的是，在S1和S2中，请使用一致的字段名，并且最好使用英文字段名。例如，如果姓名字段在S1中的名称为xingming，那么在S2中也应该保持一致，而不能使用name。当对同一个数据集进行记录匹配或找出重复记录时，可将dfA和dfB设置为同一个数据集。
 
-* varnames代表需要用来进行匹配的字段。在S1和S2中，我们用所有的5个字段，即name, sex, yob, mob和dob来进行匹配。stringdist.match表示需要利用我们的中文匹配方法来进行匹配的字段，即通过拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合来进行匹配，在这里我们仅对name字段进行中文字符串匹配。在实际操作中，请设置成你所需要进行姓名匹配的字段名称。
+* varnames代表需要用来进行匹配的字段。在S1和S2中，我们用所有的5个字段，即name, sex, yob, mob和dob来进行匹配。stringdist.match表示需要利用我们的中文匹配方法来进行匹配的字段，即通过拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合来进行匹配，在这里我们仅对name字段进行中文字符串匹配。在实际操作中，请设置成你所需要进行姓名匹配的字段名称。如果不设置stringdist.match参数，那么将会对所有字段进行精确匹配。
 
 * stringdist.method表示计算姓名相似性的函数，该函数的返回值为代表S1和S2中每个元素的相似性的矩阵。这里使用的是chin_strsim函数。**请不要修改此参数。**
 
-* stringdist.args表示输入chin_strsim函数的参数，请将reftable = unique(S1$name, S2$name)中的S1, S2分别替换为你所使用的dfA和dfB的名字，name替换为你所使用的进行姓名匹配的字段名称。
+* stringdist.args表示输入chin_strsim函数的参数，请将reftable = unique(S1$name, S2$name)中的S1, S2分别替换为你所使用的dfA和dfB的名字，name替换为你所使用的进行姓名匹配的字段名称。这里也可以使用用户自定义的函数，该函数需要包括使用哪些转换（拼音、四角号码、五笔等）以及如何计算这些转换之间的相似度，以及如何组合多种相似度。此外，由于我们使用的方法中考虑了各个姓和名出现的频次（例如常见姓的匹配比罕见姓的匹配蕴含的信息更少），因此需要提供一个列表用于计算姓和名的频次，即这里的reftable。
 
-* string.transform表示用来生成拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合的函数。这里使用的是transparser函数。**请不要修改此参数。**
+* string.transform表示用来生成拼音，四角号码，五笔，偏旁部首，字型结构以及它们的组合的函数。这里使用的是transparser函数。**除非你完全了解此函数的含义，否则请不要修改此参数。**
 
 * string.transform.args表示输入给transparser函数的参数，同上请将reftable = unique(S1$name, S2$name)中的S1, S2分别替换为你所使用的dfA和dfB的名字，name替换为你所使用的进行姓名匹配的字段名称。
 
-* cut.a表示在判断姓名是否匹配的时候的相似性的阈值，这里通过机器学习方法xgboost得到。**请不要修改此参数。**
+* cut.a表示在判断姓名是否匹配的时候的相似性的阈值，这里通过机器学习方法xgboost得到。我们的方法通过验证数据集来得到最适合的姓名匹配相似度阈值。在不同的记录匹配应用中，可以调整本阈值。调整方法见4.5节。
 
-* verbose表示是否显示匹配进度，设为T时表示是，设为F时表示否。
+* verbose表示是否显示匹配过程中的详细信息，设为T（或者TRUE）时表示是，设为F（或者FALSE）时表示否。建议设为T。
 
 * estimate.only表示是否只输出参数，不输出匹配结果，设为T时表示是，即仅输出模型的参数，建议设为F，则可同时输出参数和匹配结果。
 
-* cond.indep表示是否假设条件独立，建议设为F
+* cond.indep表示是否假设每个字段相互独立（例如姓名匹配与否与姓名匹配与否无关），建议设为F
 
 
-在匹配过程中，会输出以下信息，请留意以下输出中的数字（**Selected match probability threshold is:  0.254680688264359**），这个需要作为下一个步骤的输入。
+在匹配过程中，会输出以下信息。
+
+=====================================QU: update this part ==================================
+
 ```
 ==================== 
 fastLink(): Fast Probabilistic Record Linkage
@@ -312,7 +312,7 @@ Getting the match patterns for each estimated match took 0 minutes.
 
 ```
 
-3. 提取匹配记录
+### 4.4. 提取匹配记录
 
 提取匹配记录需要使用getMatches函数，这里的阈值将会设置为上一步中的输出，即0.254680688264359。
 
