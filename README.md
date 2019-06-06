@@ -314,16 +314,16 @@ Getting the match patterns for each estimated match took 0 minutes.
 
 ### 4.4. 提取匹配记录
 
-提取匹配记录需要使用getMatches函数，这里的阈值将会设置为上一步中的输出，即0.254680688264359。
+提取匹配记录需要使用getMatches函数，这里的匹配概率阈值将会根据设置为valres$EM$threshold.match，即上一步输出的最优阈值。在实际操作中，用户也可以设为任何0-1间的数字。
 
 ```
-matched_dfs <- getMatches(dfA = S1, dfB = S2, fl.out = valres, threshold.match = 0.254680688264359, combine.dfs = FALSE, twolineformat = TRUE)
+matched_dfs <- getMatches(dfA = S1, dfB = S2, fl.out = valres, threshold.match = valres$EM$threshold.match, combine.dfs = FALSE, twolineformat = TRUE)
 ```
-* dfA和dfB分别代表需要进行匹配的两个记录表
+* dfA和dfB分别代表需要进行匹配的两个记录表。在进行去重或者自己和自己匹配时，也可以设置为同一个记录表
 * fl.out代表fastLink的输出，这里即valres
-* threshold.match代表fastLink在console输出中使用的阈值，这里即0.254680688264359
-* combine.dfs设置为F或者是FALSE时，输出两个数据表，设置为T或者是TRUE时，输出匹配记录合并在一起的数据表。可以分别设置为T或者F，看输出结果的不同
-* twolineformat为输出数据的格式，设置为F时，输出两个数据表，设置为T时，将匹配的记录显示在一起
+* threshold.match代表用来定义记录对是否匹配的概率阈值，这里即上一步的输出valres$EM$threshold.match
+* combine.dfs设置为F或者是FALSE时，输出两个数据表，设置为T或者是TRUE时，输出匹配记录合并在一起的数据表。当dfA为暴露和dfB为疾病数据时，输出合并的数据表更方便进一步的分析。
+* twolineformat为输出数据的格式，设置为F时，输出两个数据表，设置为T时，将匹配的记录显示在一起。仅当combine.dfs被设置为F时，此参数才有意义。此输出格式适用于检查匹配结果是否合理。
 
 以下分别为将combine.dfs, twolineformat设为T或者F时的示例结果
 
@@ -385,3 +385,5 @@ $dfB.match
 22               dfB.6 拿破仑一世   1 1958   8  19        
 23  agreement pattern:          0   2    2   2   2  0.9892
 ```
+
+### 4.5. 调整姓名匹配算法的阈值
