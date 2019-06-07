@@ -492,8 +492,10 @@ opt_match <- getMatches(S1, S2, valres, valres$EM$threshold.match, combine.dfs =
 23 agreement pattern:          2   2    2   2   2       1
 ```
 
-### 4.6. 不同方法的表现以及计算时长 （进阶）
-
+### 4.6. 不同姓名匹配方法的精度以及计算时长
+在我们开发本方法的过程中，从单一的转换及基于该转换的相似度，到多个相似度的线性组合，再到到复杂的机器学习算法xgboost，我们尝试了一系列的中文人名匹配的方法。总的来说，运算时间和姓名匹配的精度均随着模型复杂程度增加，因此用户可能对较小的数据集使用高精度的算法，但是对于大的数据集来说，可能有时候需要牺牲精度来缩短运算的时间。
+下图表示不同方法的精度
 ![image](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/1.png)
+下面两个图表示不同方法的运算时间随数据集大小增大的速度
 ![image](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/2.png)
 ![image](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/3.png)
