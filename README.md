@@ -89,8 +89,8 @@ load('filled F-curves.Rdata')
 fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章](https://imai.fas.harvard.edu/research/files/linkage.pdf)。包中主要使用函数为fastLink()和getMatches()。fastLink()用于进行匹配，getMatches()用于提取相匹配的记录。
 首先读取数据，以下为读取示例数据，其中S1为需要匹配的数据1，S2为需要匹配的数据2，以下为使用之前下载的示例数据。正确的匹配结果为S1中的1-100行分别与S2中的1-100行一一对应。
 ```
-S1 <- read_csv("Name match 1.csv", locale = locale(encoding = "GB2312"))
-S2 <- read_csv("Name match 2.csv", locale = locale(encoding = "GB2312"))
+S1 <- read_csv("Name match 1.csv", locale = locale(encoding = "UTF-8"))
+S2 <- read_csv("Name match 2.csv", locale = locale(encoding = "UTF-8"))
 ```
 通过下列命令，可以查看S1和S2都包含哪些数据
 ```
@@ -239,8 +239,6 @@ S1$name[punctinds]
 [6] "铃木善幸"       "胡?涛"          "李鸿章"   
 ```
 
-=====================================QU: check cut.a ==================================
-
 ### 4.3. 记录匹配 （简单版）
 
 记录匹配使用fastLink()函数，在R操作台中，输入?fastLink可以查看函数的使用说明
@@ -275,8 +273,6 @@ valres <- fastLink(dfA = S1, dfB = S2, varnames = c('name','sex','yob','mob','do
 
 在匹配过程中，会输出以下信息。
 
-=====================================QU: update this part ==================================
-
 ```
 ==================== 
 fastLink(): Fast Probabilistic Record Linkage
@@ -285,23 +281,30 @@ fastLink(): Fast Probabilistic Record Linkage
 If you set return.all to FALSE, you will not be able to calculate a confusion table as a summary statistic.
 Calculating matches for each variable.
     Matching variable name using string-distance matching.
-WARNING: You have no exact matches for name.
+
+Attaching package: ‘Matrix’
+
+The following object is masked from ‘package:tidyr’:
+
+    expand
+
+
     Matching variable sex using exact matching.
     Matching variable yob using exact matching.
     Matching variable mob using exact matching.
     Matching variable dob using exact matching.
-Calculating matches for each variable took 0.7 minutes.
+Calculating matches for each variable took 0.57 minutes.
 
 Getting counts for parameter estimation.
-    Parallelizing calculation using OpenMP. 1 threads out of 8 are used.
-Getting counts for parameter estimation took 0 minutes.
+    Parallelizing calculation using OpenMP. 1 threads out of 4 are used.
+Getting counts for parameter estimation took 0.01 minutes.
 
 Running the EM algorithm.
-Running the EM algorithm took 0.29 seconds.
+Running the EM algorithm took 0.09 seconds.
 
-Selected match probability threshold is:  0.254680688264359
+Selected match probability threshold is:  0.8833726653181944 
 Getting the indices of estimated matches.
-    Parallelizing calculation using OpenMP. 1 threads out of 8 are used.
+    Parallelizing calculation using OpenMP. 1 threads out of 4 are used.
 Getting the indices of estimated matches took 0 minutes.
 
 Deduping the estimated matches.
@@ -329,61 +332,61 @@ matched_dfs <- getMatches(dfA = S1, dfB = S2, fl.out = valres, threshold.match =
 
 * combine.dfs = T, twolineformat = F, 结果为两个记录集显示在一起，仅显示数据集A中的各个属性。gamma.name, gamma.sex...分别代表每个每个属性是否匹配，0代表不匹配，2代表匹配。在第一行中，gamma.name = 0，即说明在第一个匹配的记录中，姓名不一致。
 ```
-          name sex yob   mob dob  gamma.name gamma.sex gamma.yob gamma.mob gamma.dob
-1         孙文   0 1975   6   1          0         2         2         2         2
-2         莊子   1 1980  10  17          0         2         2         2         2
-3   伊姆荷太普   1 1993   4   6          0         2         2         2         2
-4       神农氏   1 1983  11   9          0         2         2         2         2
-5       陈水扁   0 1977   9   6          2         2         2         2         2
-6       拿破仑   1 1958   8  19          0         2         2         2         2
+        name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
+1       孙文   0 1975   6   1          0         2         2         2         2 0.9999891240180887
+2       庄子   1 1980  10  17          2         2         2         2         2 0.9999999664151652
+3 伊姆荷太普   1 1993   4   6          0         2         2         2         2 0.9999891240180887
+4     神农氏   1 1983  11   9          0         2         2         2         2 0.9999891240180887
+5     陈水扁   0 1977   9   6          2         2         2         2         2 0.9999999664151652
+6     拿破仑   1 1958   8  19          0         2         2         2         2 0.9999891240180887
 ```
 * combine.dfs = F, twolineformat = F 这时将匹配的记录显示为两个数据集，即dfA.match里头的第一行和dfB.match里头的第一行相对应。
 ```
-$`dfA.match`
-          name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
-1         孙文   0 1975   6   1          0         2         2         2         2 0.9891703137473733
-2         莊子   1 1980  10  17          0         2         2         2         2 0.9891703137473733
-3   伊姆荷太普   1 1993   4   6          0         2         2         2         2 0.9891703137473733
-4       神农氏   1 1983  11   9          0         2         2         2         2 0.9891703137473733
-5       陈水扁   0 1977   9   6          2         2         2         2         2 0.9999983070577794
-6       拿破仑   1 1958   8  19          0         2         2         2         2 0.9891703137473733
+$dfA.match
+             name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
+1            孙文   0 1975   6   1          0         2         2         2         2 0.9999891240180887
+2            庄子   1 1980  10  17          2         2         2         2         2 0.9999999664151652
+3      伊姆荷太普   1 1993   4   6          0         2         2         2         2 0.9999891240180887
+4          神农氏   1 1983  11   9          0         2         2         2         2 0.9999891240180887
+5          陈水扁   0 1977   9   6          2         2         2         2         2 0.9999999664151652
+6          拿破仑   1 1958   8  19          0         2         2         2         2 0.9999891240180887
 
 $dfB.match
-          name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
-1       孫中山   0 1975   6   1          0         2         2         2         2 0.9891703137473733
-2         庄子   1 1980  10  17          0         2         2         2         2 0.9891703137473733
-3       印何闐   1 1993   4   6          0         2         2         2         2 0.9891703137473733
-4         神农   1 1983  11   9          0         2         2         2         2 0.9891703137473733
-5       陳水扁   0 1977   9   6          2         2         2         2         2 0.9999983070577794
-6   拿破仑一世   1 1958   8  19          0         2         2         2         2 0.9891703137473733
+         name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
+1      孙宗山   0 1975   6   1          0         2         2         2         2 0.9999891240180887
+2        庄子   1 1980  10  17          2         2         2         2         2 0.9999999664151652
+3        印何   1 1993   4   6          0         2         2         2         2 0.9999891240180887
+4        神农   1 1983  11   9          0         2         2         2         2 0.9999891240180887
+5      陈水扁   0 1977   9   6          2         2         2         2         2 0.9999999664151652
+6  拿破仑一世   1 1958   8  19          0         2         2         2         2 0.9999891240180887
 ```
 
 * combine.dfs = F, twolineformat = T 此时将匹配的记录交织显示
 ```
             row.index       name sex  yob mob dob p_match
-1                dfA.1       孙文   0 1975   6   1        
-2                dfB.1     孫中山   0 1975   6   1        
-3   agreement pattern:          0   2    2   2   2  0.9892
-4                                                         
-5                dfA.2       莊子   1 1980  10  17        
-6                dfB.2       庄子   1 1980  10  17        
-7   agreement pattern:          0   2    2   2   2  0.9892
-8                                                         
-9                dfA.3 伊姆荷太普   1 1993   4   6        
-10               dfB.3     印何闐   1 1993   4   6        
-11  agreement pattern:          0   2    2   2   2  0.9892
-12                                                        
-13               dfA.4     神农氏   1 1983  11   9        
-14               dfB.4       神农   1 1983  11   9        
-15  agreement pattern:          0   2    2   2   2  0.9892
-16                                                        
-17               dfA.5     陈水扁   0 1977   9   6        
-18               dfB.5     陳水扁   0 1977   9   6        
-19  agreement pattern:          2   2    2   2   2       1
-20                                                        
-21               dfA.6     拿破仑   1 1958   8  19        
-22               dfB.6 拿破仑一世   1 1958   8  19        
-23  agreement pattern:          0   2    2   2   2  0.9892
+1               dfA.1       孙文   0 1975   6   1        
+2               dfB.1     孙宗山   0 1975   6   1        
+3  agreement pattern:          0   2    2   2   2       1
+4                                                        
+5               dfA.2       庄子   1 1980  10  17        
+6               dfB.2       庄子   1 1980  10  17        
+7  agreement pattern:          2   2    2   2   2       1
+8                                                        
+9               dfA.3 伊姆荷太普   1 1993   4   6        
+10              dfB.3       印何   1 1993   4   6        
+11 agreement pattern:          0   2    2   2   2       1
+12                                                       
+13              dfA.4     神农氏   1 1983  11   9        
+14              dfB.4       神农   1 1983  11   9        
+15 agreement pattern:          0   2    2   2   2       1
+16                                                       
+17              dfA.5     陈水扁   0 1977   9   6        
+18              dfB.5     陈水扁   0 1977   9   6        
+19 agreement pattern:          2   2    2   2   2       1
+20                                                       
+21              dfA.6     拿破仑   1 1958   8  19        
+22              dfB.6 拿破仑一世   1 1958   8  19        
+23 agreement pattern:          0   2    2   2   2       1
 ```
 
 ### 4.5. 调整姓名匹配算法的阈值
