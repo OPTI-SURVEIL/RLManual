@@ -239,7 +239,7 @@ S1$name[punctinds]
 [6] "铃木善幸"       "胡?涛"          "李鸿章"   
 ```
 
-### 4.3. 记录匹配 （简单版）
+### 4.3. 记录匹配
 
 记录匹配使用fastLink()函数，在R操作台中，输入?fastLink可以查看函数的使用说明
 ```
@@ -389,4 +389,107 @@ $dfB.match
 23 agreement pattern:          0   2    2   2   2       1
 ```
 
-### 4.5. 调整姓名匹配算法的阈值
+### 4.5. 调整姓名匹配算法的阈值 （进阶）
+姓名相似度的最优阈值取决于匹配数据对数目和不匹配数据对数目之间的比值，以及匹配中用到的其它的字段的可靠程度。如果如果匹配和不匹配的记录对之间的比值相对较大，而且其它的字段也可以提供足够的信息时，我们就可以降低姓名匹配相似度的阈值。这样一来，匹配算法的灵敏性就会加大，但是同时也有可能会带来更多的假阳性记录对（不应该被匹配上的记录对被匹配上了）。
+
+为了得到最适宜的姓名匹配阈值，可以首先进行精确匹配来估算匹配记录对和不匹配记录对的比例，以及各标识字段蕴含的信息量。
+```
+exact_match_res <- fastLink(dfA = S1, dfB = S2, 
+            varnames = c('name','sex','yob','mob','dob'),
+            verbose = T, estimate.only = F, cond.indep = F)
+```
+输出结果为：
+```
+==================== 
+fastLink(): Fast Probabilistic Record Linkage
+==================== 
+
+If you set return.all to FALSE, you will not be able to calculate a confusion table as a summary statistic.
+Calculating matches for each variable.
+    Matching variable name using exact matching.
+    Matching variable sex using exact matching.
+    Matching variable yob using exact matching.
+    Matching variable mob using exact matching.
+    Matching variable dob using exact matching.
+Calculating matches for each variable took 0.39 minutes.
+
+Getting counts for parameter estimation.
+    Parallelizing calculation using OpenMP. 1 threads out of 4 are used.
+Getting counts for parameter estimation took 0 minutes.
+
+Running the EM algorithm.
+Running the EM algorithm took 0.06 seconds.
+
+Selected match probability threshold is:  0.5636415747235356 
+Getting the indices of estimated matches.
+    Parallelizing calculation using OpenMP. 1 threads out of 4 are used.
+Getting the indices of estimated matches took 0 minutes.
+
+Deduping the estimated matches.
+Deduping the estimated matches took 0 minutes.
+
+Getting the match patterns for each estimated match.
+Getting the match patterns for each estimated match took 0 minutes.
+```
+
+接下来可以用F_adjust_link函数来估算姓名匹配相似度的阈值:
+```
+adjusted_F <- F_adjust_link(Fcurve = xgb10F1_filled$curvedat, 
+                            flinkres = exact_match_res$EM,
+                            thresh.match = exact_match_res$EM$threshold.match,
+                            namecol = 'name',
+                            plot = T) 
+```
+* Fcurve为从模型验证数据得到的包含多个阈值下的F1得分的对象
+* flinkres为fastLink输出的EM对象
+* thresh.match表示fastLink中匹配概率阈值
+* namecol为存储了姓名的字段名
+* plot表示是否绘制原始（红色）和校准后（蓝色）的F曲线
+
+然后可以将计算得到的最优的姓名相似度阈值adjusted_F$opt.thresh输入到fastLink函数:
+```
+valres <- fastLink(dfA = S1, dfB = S2, 
+            varnames = c('name','sex','yob','mob','dob'),
+            stringdist.match = 'name', 
+            stringdist.method = chin_strsim,
+            stringdist.args = list(model = model_10, reftable = unique(S1$name, S2$name)),
+            string.transform = transparser, 
+            string.transform.args = list(model = model_10,reftable = unique(S1$name, S2$name)),
+            cut.a = adjusted_F$opt.thresh, 
+            verbose = T, estimate.only = F, cond.indep = F)
+
+```
+
+同之前一样，依旧可以用getMatches来得到相匹配的数据
+```
+opt_match <- getMatches(S1, S2, valres, valres$EM$threshold.match, combine.dfs = F, twolineformat = T)
+```
+
+```
+            row.index       name sex  yob mob dob p_match
+1               dfA.1       孙文   0 1975   6   1        
+2               dfB.1     孙宗山   0 1975   6   1        
+3  agreement pattern:          0   2    2   2   2       1
+4                                                        
+5               dfA.2       庄子   1 1980  10  17        
+6               dfB.2       庄子   1 1980  10  17        
+7  agreement pattern:          2   2    2   2   2       1
+8                                                        
+9               dfA.3 伊姆荷太普   1 1993   4   6        
+10              dfB.3       印何   1 1993   4   6        
+11 agreement pattern:          0   2    2   2   2       1
+12                                                       
+13              dfA.4     神农氏   1 1983  11   9        
+14              dfB.4       神农   1 1983  11   9        
+15 agreement pattern:          2   2    2   2   2       1
+16                                                       
+17              dfA.5     陈水扁   0 1977   9   6        
+18              dfB.5     陈水扁   0 1977   9   6        
+19 agreement pattern:          2   2    2   2   2       1
+20                                                       
+21              dfA.6     拿破仑   1 1958   8  19        
+22              dfB.6 拿破仑一世   1 1958   8  19        
+23 agreement pattern:          2   2    2   2   2       1
+```
+
+### 4.6. 不同方法的表现以及计算时长 （进阶）
