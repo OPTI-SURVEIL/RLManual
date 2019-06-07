@@ -438,6 +438,8 @@ F1curve = function(scores,truth, plot = T){
   ))
 }
 
+
+
 F_adjust = function(F1curve,baseline_pi,new_pi, plot = T){
   
   #newFP = F1curve$FP * (1-new_pi)/(1-baseline_pi)
@@ -595,32 +597,38 @@ p_thresh_adjust = function(cal_prob, baseline_pi, new_pi){
   odds/(1+odds) #adjusted probability threshold
 }
 
-F_adjust_link = function(Fcurve, flinkres, thresh.match,namecol, plot = T){
-  namecol = paste0('gamma.',namecol)
-
-  fcols = 1:length(flinkres$varnames)
+F_adjust_link = function(Fcurve, flinkres, thresh.match,namecol, plot = T, aggressive = T){
+  devel_p.m = 7.744855e-06
+  devel_p.u = 1- devel_p.m
   
-  linked = which(flinkres$zeta.j >= thresh.match)
-  pats = flinkres$patterns.w[linked,fcols]
-  newpats = pats
-  newpats[,namecol] = 0
+  if(aggressive){
+    namecol = grep(namecol, colnames(flinkres$patterns.w))
+    
+    fcols = 1:length(flinkres$varnames)
+    
+    linked = which(flinkres$zeta.j >= thresh.match)
+    pats = flinkres$patterns.w[linked,fcols]
+    newpats = pats
+    newpats[,namecol] = 0
+    
+    newpats = unique(newpats)
+    
+    newpats_ = unique(rbind(pats,newpats))
+    newpats_ = apply(newpats_,1,paste0,collapse = '')
+    
+    allpats_ = apply(flinkres$patterns.w[,fcols],1,paste0,collapse = '')
+    counts = flinkres$patterns.w[match(newpats_,allpats_),'counts']
+    probs = flinkres$zeta.j[match(newpats_,allpats_)]
+    
+    app_p.m = sum(counts * probs,na.rm=T)/sum(counts)
+    app_p.u = sum(counts * (1-probs), na.rm=T)/sum(counts)
+  }else{
+    app_p.m = flinkres$p.m
+    app_p.u = flinkres$p.u
+  }
   
-  newpats = unique(newpats)
-  
-  newpats_ = unique(rbind(pats,newpats))
-  newpats_ = apply(newpats_,1,paste0,collapse = '')
-  
-  allpats_ = apply(flinkres$patterns.w[,fcols],1,paste0,collapse = '')
-  counts = flinkres$patterns.w[match(newpats_,allpats_),'counts']
-  probs = flinkres$zeta.j[match(newpats_,allpats_)]
-  
-  pTP = sum(counts * probs,na.rm=T)
-  pFP = sum(counts * (1-probs), na.rm=T)
-  totPos = sum(flinkres$p.m * flinkres$patterns.w[,'counts'])
-  totNeg = sum(flinkres$p.u * flinkres$patterns.w[,'counts'])
-  
-  Fcurve$FP = Fcurve$FP * pFP/totNeg
-  Fcurve$TP = Fcurve$TP * pTP/totPos
+  Fcurve$FP = Fcurve$FP * app_p.u/devel_p.u
+  Fcurve$TP = Fcurve$TP * app_p.m/devel_p.m
   
   Fcurve$Recall = Fcurve$TP/max(Fcurve$TP)
   Fcurve$Precision = Fcurve$TP/(Fcurve$TP + Fcurve$FP)
@@ -638,6 +646,81 @@ F_adjust_link = function(Fcurve, flinkres, thresh.match,namecol, plot = T){
     curvedat = Fcurve,
     opt.thresh = Fcurve$Score[which.max(Fcurve$F1)],
     opt.F1 = max(Fcurve$F1)
+  ))
+}
+
+expit = function(x) 1/(1+exp(-x))
+
+logit = function(x) log(x/(1-x))
+
+ecdf_reduce = function(ecdf,resolution = 1e5, minscore = 0, maxscore = 1){
+  x = seq(minscore,maxscore,length.out = resolution)
+  y = ecdf(x)
+  temp = list(x=x, yf = y)
+  class(temp) = 'monoreg'
+  isoreg.reduce(temp)
+}
+
+fit.ecdf.red = function(ecdf.red,x){
+  fit.isored(ecdf.red,x)
+}
+
+Double_thresh_estimator = function(m_ecdf,u_ecdf,flinkres,thresh.match,namecol,cut.a = 0.95,cut.p = 0.5, linkfun = expit, 
+                                   stickfun = function(x,y) x + expit(y) * (1-x), aggressive = T){
+  
+  if(aggressive){
+    namecol = grep(namecol, colnames(flinkres$patterns.w))
+    
+    fcols = 1:length(flinkres$varnames)
+    
+    linked = which(flinkres$zeta.j >= thresh.match)
+    pats = flinkres$patterns.w[linked,fcols]
+    newpats = pats
+    newpats[,namecol] = 0
+    
+    newpats = unique(newpats)
+    
+    newpats_ = unique(rbind(pats,newpats))
+    newpats_ = apply(newpats_,1,paste0,collapse = '')
+    
+    allpats_ = apply(flinkres$patterns.w[,fcols],1,paste0,collapse = '')
+    counts = flinkres$patterns.w[match(newpats_,allpats_),'counts']
+    probs = flinkres$zeta.j[match(newpats_,allpats_)]
+    
+    app_p.m = sum(counts * probs,na.rm=T)
+    app_p.u = sum(counts * (1-probs), na.rm=T)
+  }else{
+    app_p.m = flinkres$p.m * sum(flinkres$patterns.w[,'counts'])
+    app_p.u = flinkres$p.u * sum(flinkres$patterns.w[,'counts'])
+  }
+ 
+  find_cuts = function(cuts){
+    cut.2 = linkfun(cuts[2])
+    cut.1 = stickfun(cut.2, cuts[1])
+    
+    (app_p.m * (1-fit.ecdf.red(m_ecdf,cut.1)) / pmax((app_p.m * (1-fit.ecdf.red(m_ecdf,cut.1)) + 
+                                               app_p.u * (1-fit.ecdf.red(u_ecdf,cut.1))),1e-9) - cut.a)^2 + 
+      (app_p.m * (fit.ecdf.red(m_ecdf,cut.1) - fit.ecdf.red(m_ecdf,cut.2)) / 
+         pmax((app_p.m * (fit.ecdf.red(m_ecdf,cut.1) - fit.ecdf.red(m_ecdf,cut.2)) + 
+            app_p.u * (fit.ecdf.red(u_ecdf,cut.1) - fit.ecdf.red(u_ecdf,cut.2))),1e-9) - cut.p)^2
+  }
+  
+  cut = optim(c(-9,-9),find_cuts)$par
+  cut[2] = linkfun(cut[2])
+  cut[1] = stickfun(cut[2],cut[1])
+  
+  ratio.1 = app_p.m * (1-fit.ecdf.red(m_ecdf,cut[1])) / (app_p.m * (1-fit.ecdf.red(m_ecdf,cut[1])) + 
+                                                      app_p.u * (1-fit.ecdf.red(u_ecdf,cut[1])))
+  ratio.2 = app_p.m * (fit.ecdf.red(m_ecdf,cut[1]) - fit.ecdf.red(m_ecdf,cut[2])) / 
+    (app_p.m * (fit.ecdf.red(m_ecdf,cut[1]) - fit.ecdf.red(m_ecdf,cut[2])) + 
+       app_p.u * (fit.ecdf.red(u_ecdf,cut[1]) - fit.ecdf.red(u_ecdf,cut[2])))
+  
+  cat('Estimated probability of match for upper threshold is ', ratio.1,'\n')
+  cat('Estimated probability of match for lower threshold is ', ratio.2,'\n')
+  
+  return(list(
+    cut.a = cut[1],
+    cut.p = cut[2]
   ))
 }
 
