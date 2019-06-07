@@ -493,3 +493,7 @@ opt_match <- getMatches(S1, S2, valres, valres$EM$threshold.match, combine.dfs =
 ```
 
 ### 4.6. 不同方法的表现以及计算时长 （进阶）
+
+![image](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/1.png)
+![image](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/2.png)
+![image](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/3.png)
