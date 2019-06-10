@@ -26,6 +26,7 @@
 
   Rtools可从https://pan.baidu.com/s/1Cot7btWJubv3NJ7iGRvwKQ 下载，提取码: 8dbp
 3. [安装所需要的R包](http://blog.sciencenet.cn/blog-2379401-936653.html)tidyverse, xgboost,devtools和readr，可按照链接中的方法1来安装，即在RStudio的操作台中输入install.packages("tidyverse")，之后回车。另外两个包可以按照同样的方法安装。 
+4.0 依据[此链接](https://blog.csdn.net/qq_38977097/article/details/80770987)更改host文件里Github的ip地址
 4. 使用以下代码安装Berkeley开发的包chinsimi, fastLink。
 ```
 devtools::install_github('OPTI-SURVEIL/fastLink',dependencies = T, force = TRUE)
