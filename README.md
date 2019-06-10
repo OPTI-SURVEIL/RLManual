@@ -59,6 +59,7 @@ setwd"C:/Users/Documents/")
 
 ```diff
 - 请将C:/Users/Documents/替换为第1步中保存下载数据的路径
+- 最好使用英文路径,即路径中最好不要有汉字
 ```
 
 ### 3.4. 加载所需要的R包
