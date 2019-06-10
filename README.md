@@ -94,6 +94,9 @@ fastLink包采用Fellegi-Sunter记录匹配法，方法详细描述见[此文章
 S1 <- read_csv("Name match 1.csv", locale = locale(encoding = "UTF-8"))
 S2 <- read_csv("Name match 2.csv", locale = locale(encoding = "UTF-8"))
 ```
+```diff
+- 这里Name match 1.csv和Name match 2.csv为提供的示例数据，在实际应用中，请将数据保存在和之前下载的数据相同的文件夹，并将Name match 1.csv和Name match 2.csv替换为您所需要匹配的文件名。
+```
 通过下列命令，可以查看S1和S2都包含哪些数据
 ```
 View(S1)
@@ -128,6 +131,9 @@ S2 <- read_csv("Name match 2.csv", locale = locale(encoding = "GB2312"))
 ```
 
 ### 4.2. 数据清洗
+```diff
+- 这一部分也可以在excel中进行
+```
 
 姓名字段中，有时候会包括一些非汉字的字符，例如数字、字母和标点符号等（例如S1的第4行-神a农氏），因此需要首先进行数据清洗。在这里我们仅以Name match 1.csv作为示范，对S2的操作可以用同样方式进行。除了姓名外，其他字段也可以用类似的方法进行清洗。
 
