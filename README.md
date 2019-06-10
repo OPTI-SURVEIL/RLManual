@@ -52,7 +52,7 @@ Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 ### 3.3. 设置工作文件夹 
 设置工作文件夹为保存步骤1中下载数据的文件夹，注意文件路径中应该用"/"而非"\"，例如不应该用"C:\Users\Documents\"而应该用"C:/Users/Documents/"。 例如：
 ```
-setwd("C:/Users/Documents/")
+setwd(<font color='red'>"C:/Users/Documents/"</font>)
 ```
 **请将C:/Users/Documents/替换为第1步中保存下载数据的路径**
 
