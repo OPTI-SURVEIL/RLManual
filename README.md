@@ -38,8 +38,15 @@ devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 如果安装出现问题，请尝试另外一种方法:
 * 下载[fastLink](https://github.com/OPTI-SURVEIL/fastLink),点击页面右边中间的绿色按钮Clone or Download，然后选择Download ZIP，记住存储位置，例如C:\Users\Qu\Downloads
 * 下载[chinsimi](https://github.com/OPTI-SURVEIL/chinsimi),点击页面右边中间的绿色按钮Clone or Download，然后选择Download ZIP，记住存储位置，例如C:\Users\Downloads
-* 打开R studio,在操作台中键入devtools::install_local(path = "C:\\Users\\Downloads\\fastLink-master.zip")来安装fastLink包
-* 打开R studio,在操作台中键入devtools::install_local(path = "C:\\Users\\Downloads\\chinsimi-master.zip")来安装fastLink包
+* 打开R studio,在操作台中键入以下命令来安装fastLink包
+```
+devtools::install_local(path = "C:\\Users\\Downloads\\fastLink-master.zip")
+```
+
+* 打开R studio,在操作台中键入以下命令来安装chinsimi包
+```
+devtools::install_local(path = "C:\\Users\\Downloads\\chinsimi-master.zip")
+```
 
 <a name="prep"></a>
 ## 3. 准备工作
