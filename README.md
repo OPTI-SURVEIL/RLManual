@@ -55,7 +55,7 @@ Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 setwd"C:/Users/Documents/")
 ```
 <font color='red'>请将C:/Users/Documents/替换为第1步中保存下载数据的路径</font>
-
+<p style="color:red">请将C:/Users/Documents/替换为第1步中保存下载数据的路径</p>
 
 ### 3.4. 加载所需要的R包
 ```
