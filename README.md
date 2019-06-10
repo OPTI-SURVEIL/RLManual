@@ -96,7 +96,7 @@ S2 <- read_csv("Name match 2.csv", locale = locale(encoding = "UTF-8"))
 ```
 ```diff
 - 这里Name match 1.csv和Name match 2.csv为提供的示例数据，在实际应用中，请将数据保存在和之前下载的数据相同的文件夹，
-并将Name match 1.csv和Name match 2.csv替换为您所需要匹配的文件名。
+- 并将Name match 1.csv和Name match 2.csv替换为您所需要匹配的文件名。
 ```
 通过下列命令，可以查看S1和S2都包含哪些数据
 ```
