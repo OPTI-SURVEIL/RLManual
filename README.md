@@ -36,14 +36,14 @@ devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 ## 3. 准备工作
 ### 3.1. 下载数据 
 下载[此文件夹](https://github.com/OPTI-SURVEIL/RLManual)中以下文件：
-* Name match 1.csv, Name match 2.csv - 样例数据
+* Name match 1.csv, Name match 2.csv - 样例数据（双击下载的文件可以用excel查看文件内容）
 * linkage_utils.R - 匹配过程中需要的函数
 * filled F-curves.Rdata - 设定姓名匹配相似度阈值所需要的数据
 * final_xgb_model_10.Rdata - 机器学习模型数据
 
 
 ### 3.2. 将系统环境设置为中文
-因为我们需要匹配的记录是中文，因此我们需要首先将R环境设置成中文。在Windows系统上，可使用：
+打开Rstudio，点击左上角加号新建Rscript。在新建的文件中输入以下代码，当选中代码时，点击右上角run可以运行选中的代码。因为我们需要匹配的记录是中文，因此我们需要首先将R环境设置成中文。在Windows系统上，可使用：
 ```
 Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 ```
@@ -127,7 +127,7 @@ S2 <- read_csv("Name match 2.csv", locale = locale(encoding = "GB2312"))
 
 ### 4.2. 数据清洗
 
-姓名字段中，有时候会包括一些非汉字的字符，例如数字、字母和标点符号等（例如S1的第4行-神a农氏），因此需要首先进行数据清洗。在这里我们仅以Name match 1.csv作为示范，但是在实际应用中，需要对两个文件均进行数据清洗。除了姓名外，其他字段也可以用类似的方法进行清洗。
+姓名字段中，有时候会包括一些非汉字的字符，例如数字、字母和标点符号等（例如S1的第4行-神a农氏），因此需要首先进行数据清洗。在这里我们仅以Name match 1.csv作为示范，对S2的操作可以用同样方式进行。除了姓名外，其他字段也可以用类似的方法进行清洗。
 
 **1. 删除字母**
 
