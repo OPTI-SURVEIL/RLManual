@@ -29,15 +29,17 @@
   
 3. [安装所需要的R包](http://blog.sciencenet.cn/blog-2379401-936653.html)tidyverse, xgboost,devtools和readr，可按照链接中的方法1来安装，即在RStudio的操作台中输入install.packages("tidyverse")，之后回车。另外两个包可以按照同样的方法安装。
 
-4. 因为中国连接github很慢，请依据[此链接](https://blog.csdn.net/qq_38977097/article/details/80770987)更改host文件里Github的ip地址
-
-5. 使用以下代码安装Berkeley开发的包chinsimi, fastLink。
+4. 使用以下代码安装Berkeley开发的包chinsimi, fastLink。
 ```
 devtools::install_github('OPTI-SURVEIL/fastLink',dependencies = T, force = TRUE)
 devtools::install_github('OPTI-SURVEIL/chinsimi',dependencies = T, force = TRUE)
 ```
 
-
+如果安装出现问题，请尝试另外一种方法:
+* 下载[fastLink](https://github.com/OPTI-SURVEIL/fastLink),点击页面右边中间的绿色按钮Clone or Download，然后选择Download ZIP，记住存储位置，例如C:\Users\Qu\Downloads
+* 下载[chinsimi](https://github.com/OPTI-SURVEIL/chinsimi),点击页面右边中间的绿色按钮Clone or Download，然后选择Download ZIP，记住存储位置，例如C:\Users\Downloads
+* 打开R studio,在操作台中键入devtools::install_local(path = "C:\\Users\\Downloads\\fastLink-master.zip")来安装fastLink包
+* 打开R studio,在操作台中键入devtools::install_local(path = "C:\\Users\\Downloads\\chinsimi-master.zip")来安装fastLink包
 
 <a name="prep"></a>
 ## 3. 准备工作
@@ -59,7 +61,7 @@ Sys.setlocale(category = 'LC_ALL', locale = 'Chinese')
 ### 3.3. 设置工作文件夹 
 设置工作文件夹为保存步骤1中下载数据的文件夹，注意文件路径中应该用"/"而非"\"，例如不应该用"C:\Users\Documents\"而应该用"C:/Users/Documents/"。 例如：
 ```
-setwd"C:/Users/Documents/")
+setwd("C:/Users/Documents/")
 ```
 
 ```diff
