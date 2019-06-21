@@ -31,8 +31,8 @@ transparser = function(names,model = NULL, varnames = NULL,reftable = NULL){
   sub = unlist(sub)
   trans_ = gsub('[fg][12]','',trans)
   if(!is.null(reftable)){
-    env = sys.frame(sys.parent(1))
-    defvars = ls(envir = sys.frame(sys.parent(1)))
+    env = sys.frame(sys.parent(2))
+    defvars = ls(envir = env)
     if(!('f1table' %in% defvars)){
       f1table = name_freq_table(reftable,1,1)
       assign('f1table', f1table, pos = env)
@@ -664,9 +664,9 @@ ecdf_reduce = function(ecdf,resolution = 1e5, minscore = 0, maxscore = 1){
 fit.ecdf.red = function(ecdf.red,x){
   fit.isored(ecdf.red,x)
 }
-
+ 
 Double_thresh_estimator = function(m_ecdf,u_ecdf,flinkres,thresh.match,namecol,cut.a = 0.95,cut.p = 0.5, linkfun = expit, 
-                                   stickfun = function(x,y) x + expit(y) * (1-x), aggressive = T){
+                                   stickfun = function(x,y) x + expit(y) * (1-x), aggressive = T,start = c(3,-3)){
   
   if(aggressive){
     namecol = grep(namecol, colnames(flinkres$patterns.w))
@@ -698,14 +698,15 @@ Double_thresh_estimator = function(m_ecdf,u_ecdf,flinkres,thresh.match,namecol,c
     cut.2 = linkfun(cuts[2])
     cut.1 = stickfun(cut.2, cuts[1])
     
-    (app_p.m * (1-fit.ecdf.red(m_ecdf,cut.1)) / pmax((app_p.m * (1-fit.ecdf.red(m_ecdf,cut.1)) + 
-                                               app_p.u * (1-fit.ecdf.red(u_ecdf,cut.1))),1e-9) - cut.a)^2 + 
+    
+    (app_p.m * (1-fit.ecdf.red(m_ecdf,cut.1)) /(app_p.m * (1-fit.ecdf.red(m_ecdf,cut.1)) + 
+                                               app_p.u * (1-fit.ecdf.red(u_ecdf,cut.1))) - cut.a)^2 + 
       (app_p.m * (fit.ecdf.red(m_ecdf,cut.1) - fit.ecdf.red(m_ecdf,cut.2)) / 
-         pmax((app_p.m * (fit.ecdf.red(m_ecdf,cut.1) - fit.ecdf.red(m_ecdf,cut.2)) + 
-            app_p.u * (fit.ecdf.red(u_ecdf,cut.1) - fit.ecdf.red(u_ecdf,cut.2))),1e-9) - cut.p)^2
+         (app_p.m * (fit.ecdf.red(m_ecdf,cut.1) - fit.ecdf.red(m_ecdf,cut.2)) + 
+            app_p.u * (fit.ecdf.red(u_ecdf,cut.1) - fit.ecdf.red(u_ecdf,cut.2))) - cut.p)^2
   }
   
-  cut = optim(c(-9,-9),find_cuts)$par
+  cut = optim(start,find_cuts)$par
   cut[2] = linkfun(cut[2])
   cut[1] = stickfun(cut[2],cut[1])
   
@@ -724,3 +725,27 @@ Double_thresh_estimator = function(m_ecdf,u_ecdf,flinkres,thresh.match,namecol,c
   ))
 }
 
+
+ratio.plotter = function(m_ecdf,u_ecdf,p.m){
+  p.u = 1-p.m
+  xs = seq(min(u_ecdf$x),max(m_ecdf$x),length.out = 1e4)
+  m.lh = p.m * (1-fit.ecdf.red(m_ecdf,xs))
+  u.lh = p.u * (1-fit.ecdf.red(u_ecdf,xs))
+  plot(xs,m.lh/(m.lh + u.lh), 'l')
+}
+
+ratio.plotter2 = function(m_ecdf,u_ecdf,p.m,score1){
+  p.u = 1-p.m
+  xs = seq(min(u_ecdf$x),score1,length.out = 1e4)
+  m.lh = p.m * (fit.ecdf.red(m_ecdf,score1)-fit.ecdf.red(m_ecdf,xs))
+  u.lh = p.u * (fit.ecdf.red(u_ecdf,score1)-fit.ecdf.red(u_ecdf,xs))
+  plot(xs,m.lh/(m.lh + u.lh), 'l')
+}
+
+
+link.thresh = function(flinkres){
+  Ntarg = flinkres$p.m * sum(flinkres$patterns.w[,'counts'])
+  scounts = flinkres$patterns.w[order(flinkres$zeta.j,decreasing = T),'counts']
+  sprobs = sort(flinkres$zeta.j,decreasing = T)
+  sprobs[which.min(abs(cumsum(scounts) - Ntarg))]
+}
