@@ -57,3 +57,16 @@ and true positives above potential thresholds using `TP = p.m * (1 - predicted_e
    1. `xgboost_50_ecdfs`: ECDF data for XGBoost model with 50 features
    
    1. `xgboost_141_ecdfs`: ECDF data for XGBoost model with 141 features
+
+
+# Model performance on test data (excluding exact matches)
+
+## Early recovery portion of ROC curve
+![Early recovery portion of ROC curve](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/ROCE_test.png)
+
+## Full ROC Curve
+![Full ROC Curve](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/ROC_test.png)
+
+# Projected model runtimes (*Note that these are for a system running 24 cores in parallel!*)
+![Projected runtimes](https://github.com/OPTI-SURVEIL/RLManual/blob/master/images/Runtimes.png)
+
