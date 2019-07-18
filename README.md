@@ -346,15 +346,15 @@ Getting the match patterns for each estimated match took 0 minutes.
 提取匹配记录需要使用getMatches函数，这里的匹配概率阈值将会根据设置为valres$EM$threshold.match，即上一步输出的最优阈值。在实际操作中，用户也可以设为任何0-1间的数字。
 
 ```
-matched_dfs <- getMatches(dfA = S1, dfB = S2, fl.out = valres, threshold.match = valres$EM$threshold.match, combine.dfs = FALSE, twolineformat = TRUE)
+matched_dfs <- getMatches(dfA = S1, dfB = S2, fl.out = valres, threshold.match = valres$EM$threshold.match, combine.dfs = FALSE, inspect.matches = TRUE)
 ```
 * dfA和dfB分别代表需要进行匹配的两个记录表。在进行去重或者自己和自己匹配时，也可以设置为同一个记录表
 * fl.out代表fastLink的输出，这里即valres
 * threshold.match代表用来定义记录对是否匹配的概率阈值，这里即上一步的输出valres$EM$threshold.match
 * combine.dfs设置为F或者是FALSE时，输出两个数据表，设置为T或者是TRUE时，输出匹配记录合并在一起的数据表。当dfA为暴露和dfB为疾病数据时，输出合并的数据表更方便进一步的分析。
-* twolineformat为输出数据的格式，设置为F时，输出两个数据表，设置为T时，将匹配的记录显示在一起。仅当combine.dfs被设置为F时，此参数才有意义。此输出格式适用于检查匹配结果是否合理。
+* inspect.matches 为输出数据的格式，设置为F时，输出两个数据表，设置为T时，将匹配的记录显示在一起。仅当combine.dfs被设置为F时，此参数才有意义。此输出格式适用于检查匹配结果是否合理。
 
-以下分别为将combine.dfs, twolineformat设为T或者F时的示例结果
+以下分别为将combine.dfs, inspect.matches 设为T或者F时的示例结果
 
 * combine.dfs = T, twolineformat = F, 结果为两个记录集显示在一起，仅显示数据集A中的各个属性。gamma.name, gamma.sex...分别代表每个每个属性是否匹配，0代表不匹配，2代表匹配。在第一行中，gamma.name = 0，即说明在第一个匹配的记录中，姓名不一致。
 ```
@@ -366,7 +366,7 @@ matched_dfs <- getMatches(dfA = S1, dfB = S2, fl.out = valres, threshold.match =
 5     陈水扁   0 1977   9   6          2         2         2         2         2 0.9999999664151652
 6     拿破仑   1 1958   8  19          0         2         2         2         2 0.9999891240180887
 ```
-* combine.dfs = F, twolineformat = F 这时将匹配的记录显示为两个数据集，即dfA.match里头的第一行和dfB.match里头的第一行相对应。
+* combine.dfs = F, inspect.matches = F 这时将匹配的记录显示为两个数据集，即dfA.match里头的第一行和dfB.match里头的第一行相对应。
 ```
 $dfA.match
              name sex  yob mob dob gamma.name gamma.sex gamma.yob gamma.mob gamma.dob          posterior
@@ -387,7 +387,7 @@ $dfB.match
 6  拿破仑一世   1 1958   8  19          0         2         2         2         2 0.9999891240180887
 ```
 
-* combine.dfs = F, twolineformat = T 此时将匹配的记录交织显示
+* combine.dfs = F, inspect.matches = T 此时将匹配的记录交织显示
 ```
             row.index       name sex  yob mob dob p_match
 1               dfA.1       孙文   0 1975   6   1        
